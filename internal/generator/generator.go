@@ -38,6 +38,7 @@ func Generate(opts Options) error {
 	_ = renderTemplate("internal/templates/env.tmpl", filepath.Join(base, ".env"), opts)
 	_ = renderTemplate("internal/templates/Dockerfile.tmpl", filepath.Join(base, "Dockerfile"), opts)
 	_ = renderTemplate("internal/templates/go.mod.tmpl", filepath.Join(base, "go.mod"), opts)
+	_ = renderTemplate("internal/templates/README.md.tmpl", filepath.Join(base, "README.md"), opts)
 
 	return nil
 }

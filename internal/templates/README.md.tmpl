@@ -1,0 +1,40 @@
+# {{ .ProjectName }}
+
+A generated Go backend service powered by [gocraft](https://github.com/zonieedhossain/gocraft)
+
+---
+
+## 🧩 Stack Used
+
+- **Web Framework**: {{ .Web }}
+- **Database**: {{ .DB }}
+- **ORM**: {{ .ORM }}
+{{- if .Auth }}
+- **Authentication**: Enabled
+{{- end }}
+{{- if .Docker }}
+- **Docker Support**: Enabled
+{{- end }}
+
+---
+
+## 📦 Module
+
+```go
+module {{ .ModulePath }}
+```
+
+## 🚀 Getting Started
+```base
+go mod tidy
+go run ./cmd/main.go
+```
+
+## 📁 Structure
+```base
+cmd/
+internal/
+.env
+Dockerfile
+go.mod
+```
