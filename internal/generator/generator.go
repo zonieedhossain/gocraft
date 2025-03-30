@@ -63,14 +63,13 @@ func Generate(opts Options) error {
 }
 
 func renderTemplate(templateName, outputPath string, data any) error {
-	// Get the base path where this Go file lives
+	// Get the absolute path to the current file (generator.go)
 	_, currentFile, _, _ := runtime.Caller(0)
-	basePath := filepath.Dir(currentFile)
 
-	// Go to internal/templates/ + templateName
-	fullTemplatePath := filepath.Join(basePath, "..", "templates", templateName)
+	// Build the path to the templates directory
+	basePath := filepath.Join(filepath.Dir(currentFile), "..", "templates")
+	fullTemplatePath := filepath.Join(basePath, templateName)
 
-	// Parse and render the template
 	tmpl, err := template.ParseFiles(fullTemplatePath)
 	if err != nil {
 		return err
@@ -80,17 +79,13 @@ func renderTemplate(templateName, outputPath string, data any) error {
 	if err != nil {
 		return err
 	}
-	defer func(f *os.File) {
-		err := f.Close()
-		if err != nil {
-			return
-		}
-	}(f)
+	defer f.Close()
 
 	return tmpl.Execute(f, data)
 }
 
 func GenerateModule(name, web string) error {
+	fmt.Println(name, web)
 	if web == "" {
 		detected, err := detectWebFramework()
 		if err != nil {
@@ -154,10 +149,4 @@ func detectWebFramework() (string, error) {
 	default:
 		return "", fmt.Errorf("no known framework found in go.mod")
 	}
-}
-
-func getTemplatePath(filename string) string {
-	_, b, _, _ := runtime.Caller(0)
-	basePath := filepath.Join(b)
-	return filepath.Join(basePath, "..", "templates", filename)
 }
