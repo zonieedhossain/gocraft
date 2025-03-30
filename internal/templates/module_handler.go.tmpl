@@ -6,24 +6,74 @@ import "github.com/gofiber/fiber/v2"
 import "github.com/labstack/echo/v4"
 {{- else if eq .Web "gin" }}
 import "github.com/gin-gonic/gin"
+{{- else if eq .Web "graphql" }}
+// GraphQL-specific logic is handled in separate schema file: {{ .Name }}_schema.go
 {{- end }}
 
 {{- if eq .Web "fiber" }}
-func GetAll{{ .NameTitle }}s(c *fiber.Ctx) error   { return c.SendString("Get all") }
-func Get{{ .NameTitle }}(c *fiber.Ctx) error       { return c.SendString("Get one") }
-func Create{{ .NameTitle }}(c *fiber.Ctx) error    { return c.SendString("Create") }
-func Update{{ .NameTitle }}(c *fiber.Ctx) error    { return c.SendString("Update") }
-func Delete{{ .NameTitle }}(c *fiber.Ctx) error    { return c.SendString("Delete") }
+func GetAll{{ .NameTitle }}s(c *fiber.Ctx) error {
+	return c.SendString("Get all {{ .Name }}s")
+}
+
+func Get{{ .NameTitle }}(c *fiber.Ctx) error {
+	return c.SendString("Get one {{ .Name }}")
+}
+
+func Create{{ .NameTitle }}(c *fiber.Ctx) error {
+	return c.SendString("Create {{ .Name }}")
+}
+
+func Update{{ .NameTitle }}(c *fiber.Ctx) error {
+	return c.SendString("Update {{ .Name }}")
+}
+
+func Delete{{ .NameTitle }}(c *fiber.Ctx) error {
+	return c.SendString("Delete {{ .Name }}")
+}
+
 {{- else if eq .Web "echo" }}
-func GetAll{{ .NameTitle }}s(c echo.Context) error { return c.String(200, "Get all") }
-func Get{{ .NameTitle }}(c echo.Context) error     { return c.String(200, "Get one") }
-func Create{{ .NameTitle }}(c echo.Context) error  { return c.String(200, "Create") }
-func Update{{ .NameTitle }}(c echo.Context) error  { return c.String(200, "Update") }
-func Delete{{ .NameTitle }}(c echo.Context) error  { return c.String(200, "Delete") }
+func GetAll{{ .NameTitle }}s(c echo.Context) error {
+	return c.String(200, "Get all {{ .Name }}s")
+}
+
+func Get{{ .NameTitle }}(c echo.Context) error {
+	return c.String(200, "Get one {{ .Name }}")
+}
+
+func Create{{ .NameTitle }}(c echo.Context) error {
+	return c.String(200, "Create {{ .Name }}")
+}
+
+func Update{{ .NameTitle }}(c echo.Context) error {
+	return c.String(200, "Update {{ .Name }}")
+}
+
+func Delete{{ .NameTitle }}(c echo.Context) error {
+	return c.String(200, "Delete {{ .Name }}")
+}
+
 {{- else if eq .Web "gin" }}
-func GetAll{{ .NameTitle }}s(c *gin.Context)        { c.String(200, "Get all") }
-func Get{{ .NameTitle }}(c *gin.Context)            { c.String(200, "Get one") }
-func Create{{ .NameTitle }}(c *gin.Context)         { c.String(200, "Create") }
-func Update{{ .NameTitle }}(c *gin.Context)         { c.String(200, "Update") }
-func Delete{{ .NameTitle }}(c *gin.Context)         { c.String(200, "Delete") }
+func GetAll{{ .NameTitle }}s(c *gin.Context) {
+	c.String(200, "Get all {{ .Name }}s")
+}
+
+func Get{{ .NameTitle }}(c *gin.Context) {
+	c.String(200, "Get one {{ .Name }}")
+}
+
+func Create{{ .NameTitle }}(c *gin.Context) {
+	c.String(200, "Create {{ .Name }}")
+}
+
+func Update{{ .NameTitle }}(c *gin.Context) {
+	c.String(200, "Update {{ .Name }}")
+}
+
+func Delete{{ .NameTitle }}(c *gin.Context) {
+	c.String(200, "Delete {{ .Name }}")
+}
+
+{{- else if eq .Web "graphql" }}
+// GraphQL schema and resolvers are defined in {{ .Name }}_schema.go
+// You can add your fields and resolvers there.
 {{- end }}

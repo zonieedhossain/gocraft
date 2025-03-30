@@ -1,0 +1,39 @@
+package handlers
+
+import (
+	"github.com/graphql-go/graphql"
+	"fmt"
+)
+
+// {{ .Name }}Type defines the GraphQL object for {{ .Name }}
+var {{ .Name }}Type = graphql.NewObject(graphql.ObjectConfig{
+	Name: "{{ .NameTitle }}",
+	Fields: graphql.Fields{
+		"id":   &graphql.Field{Type: graphql.ID},
+		"name": &graphql.Field{Type: graphql.String},
+	},
+})
+
+// Get{{ .NameTitle }}GraphQLSchema returns a basic schema for {{ .Name }}
+func Get{{ .NameTitle }}GraphQLSchema() *graphql.Schema {
+	rootQuery := graphql.ObjectConfig{Name: "RootQuery", Fields: graphql.Fields{
+		"{{ .Name }}": &graphql.Field{
+			Type: {{ .Name }}Type,
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				return map[string]interface{}{
+					"id":   "1",
+					"name": "Sample {{ .NameTitle }}",
+				}, nil
+			},
+		},
+	}}
+
+	schemaConfig := graphql.SchemaConfig{Query: graphql.NewObject(rootQuery)}
+	schema, err := graphql.NewSchema(schemaConfig)
+	if err != nil {
+		fmt.Println("GraphQL schema error:", err)
+		return nil
+	}
+
+	return &schema
+}

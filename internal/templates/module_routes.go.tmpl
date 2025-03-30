@@ -6,7 +6,14 @@ import "github.com/gofiber/fiber/v2"
 import "github.com/labstack/echo/v4"
 {{- else if eq .Web "gin" }}
 import "github.com/gin-gonic/gin"
+{{- else if eq .Web "graphql" }}
+import (
+	"github.com/graphql-go/graphql"
+	"github.com/gofiber/fiber/v2"
+	"github.com/graphql-go/handler"
+)
 {{- end }}
+
 import "{{ .ModulePath }}/internal/handlers"
 
 func Register{{ .NameTitle }}Routes(app interface{}) {
@@ -31,5 +38,22 @@ func Register{{ .NameTitle }}Routes(app interface{}) {
 	g.POST("/", handlers.Create{{ .NameTitle }})
 	g.PUT("/:id", handlers.Update{{ .NameTitle }})
 	g.DELETE("/:id", handlers.Delete{{ .NameTitle }})
+{{- else if eq .Web "graphql" }}
+	app.(*fiber.App).Post("/graphql", graphqlHandler())
 {{- end }}
 }
+
+{{- if eq .Web "graphql" }}
+func graphqlHandler() fiber.Handler {
+	schema := handlers.Get{{ .NameTitle }}GraphQLSchema()
+	h := handler.New(&handler.Config{
+		Schema:   schema,
+		Pretty:   true,
+		GraphiQL: true,
+	})
+	return func(c *fiber.Ctx) error {
+		h.ServeHTTP(c.Context().ResponseWriter(), c.Context().Request())
+		return nil
+	}
+}
+{{- end }}
