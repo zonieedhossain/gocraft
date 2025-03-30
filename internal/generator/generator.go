@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -48,37 +49,45 @@ func Generate(opts Options) error {
 	}
 
 	// Load template
-	_ = renderTemplate("internal/templates/main.go.tmpl", filepath.Join(base, "main.go"), opts)
-	_ = renderTemplate("internal/templates/env.tmpl", filepath.Join(base, ".env"), opts)
-	_ = renderTemplate("internal/templates/Dockerfile.tmpl", filepath.Join(base, "Dockerfile"), opts)
-	_ = renderTemplate("internal/templates/go.mod.tmpl", filepath.Join(base, "go.mod"), opts)
-	_ = renderTemplate("internal/templates/README.md.tmpl", filepath.Join(base, "README.md"), opts)
-	_ = renderTemplate("internal/templates/Makefile.tmpl", filepath.Join(base, "Makefile"), opts)
+	_ = renderTemplate("main.go.tmpl", filepath.Join(base, "main.go"), opts)
+	_ = renderTemplate("env.tmpl", filepath.Join(base, ".env"), opts)
+	_ = renderTemplate("Dockerfile.tmpl", filepath.Join(base, "Dockerfile"), opts)
+	_ = renderTemplate("go.mod.tmpl", filepath.Join(base, "go.mod"), opts)
+	_ = renderTemplate("README.md.tmpl", filepath.Join(base, "README.md"), opts)
+	_ = renderTemplate("Makefile.tmpl", filepath.Join(base, "Makefile"), opts)
 	_ = renderTemplate(mainTemplate, filepath.Join(base, "cmd", "main.go"), opts)
-	_ = renderTemplate("internal/templates/routes.go.tmpl", filepath.Join(base, "internal", "routes", "routes.go"), opts)
-	_ = renderTemplate("internal/templates/hello.go.tmpl", filepath.Join(base, "internal", "handlers", "hello.go"), opts)
+	_ = renderTemplate("routes.go.tmpl", filepath.Join(base, "internal", "routes", "routes.go"), opts)
+	_ = renderTemplate("hello.go.tmpl", filepath.Join(base, "internal", "handlers", "hello.go"), opts)
 
 	return nil
 }
 
-func renderTemplate(templatePath, outputPath string, data any) error {
-	tmpl, err := template.ParseFiles(templatePath)
+func renderTemplate(templateName, outputPath string, data any) error {
+	// Get the base path where this Go file lives
+	_, currentFile, _, _ := runtime.Caller(0)
+	basePath := filepath.Dir(currentFile)
+
+	// Go to internal/templates/ + templateName
+	fullTemplatePath := filepath.Join(basePath, "..", "templates", templateName)
+
+	// Parse and render the template
+	tmpl, err := template.ParseFiles(fullTemplatePath)
 	if err != nil {
 		return err
 	}
 
-	file, err := os.Create(outputPath)
+	f, err := os.Create(outputPath)
 	if err != nil {
 		return err
 	}
-	defer func(file *os.File) {
-		err := file.Close()
+	defer func(f *os.File) {
+		err := f.Close()
 		if err != nil {
 			return
 		}
-	}(file)
+	}(f)
 
-	return tmpl.Execute(file, data)
+	return tmpl.Execute(f, data)
 }
 
 func GenerateModule(name, web string) error {
@@ -104,14 +113,14 @@ func GenerateModule(name, web string) error {
 	base := "."
 
 	// Generate handler
-	err := renderTemplate("internal/templates/module_handler.go.tmpl",
+	err := renderTemplate("module_handler.go.tmpl",
 		filepath.Join(base, "internal", "handlers", name+".go"), data)
 	if err != nil {
 		return err
 	}
 
 	// Generate routes
-	err = renderTemplate("internal/templates/module_routes.go.tmpl",
+	err = renderTemplate("module_routes.go.tmpl",
 		filepath.Join(base, "internal", "routes", name+"_routes.go"), data)
 	if err != nil {
 		return err
@@ -145,4 +154,10 @@ func detectWebFramework() (string, error) {
 	default:
 		return "", fmt.Errorf("no known framework found in go.mod")
 	}
+}
+
+func getTemplatePath(filename string) string {
+	_, b, _, _ := runtime.Caller(0)
+	basePath := filepath.Join(b)
+	return filepath.Join(basePath, "..", "templates", filename)
 }
