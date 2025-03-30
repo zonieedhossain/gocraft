@@ -5,37 +5,13 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/spf13/cobra"
 	"github.com/zonieedhossain/gocraft/internal/generator"
-	"os"
-	"strings"
 )
 
-// addCmd represents the add command
-var addCmd = &cobra.Command{
-	Use:   "add module [name]",
-	Short: "Add a new CRUD module to your project",
-	Args:  cobra.ExactArgs(2),
-	Run: func(cmd *cobra.Command, args []string) {
-		if args[0] != "module" {
-			fmt.Println("❌ Invalid usage. Try: gocraft add module user")
-			os.Exit(1)
-		}
-		moduleName := strings.ToLower(args[1])
-		if webFramework == "" {
-			fmt.Println("❌ Please provide the web framework with --web (fiber, echo, or gin)")
-			os.Exit(1)
-		}
-
-		err := generator.GenerateModule(moduleName, webFramework)
-		if err != nil {
-			fmt.Println("❌ Failed to generate module:", err)
-		} else {
-			fmt.Println("✅ Module", moduleName, "added successfully!")
-		}
-	},
-}
-
+// addModuleCmd handles: gocraft add module [name]
 var addModuleCmd = &cobra.Command{
 	Use:   "module [name]",
 	Short: "Add a new CRUD module to your project",
@@ -43,18 +19,20 @@ var addModuleCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		moduleName := args[0]
 
-		if webFramework == "" {
-			fmt.Println("❌ Please provide the web framework with --web (fiber, echo, or gin)")
-			os.Exit(1)
-		}
-
 		err := generator.GenerateModule(moduleName, webFramework)
 		if err != nil {
 			fmt.Println("❌ Failed to generate module:", err)
-		} else {
-			fmt.Println("✅ Module", moduleName, "added successfully!")
+			os.Exit(1)
 		}
+
+		fmt.Println("✅ Module", moduleName, "added successfully!")
 	},
+}
+
+// addCmd is just the parent namespace: gocraft add ...
+var addCmd = &cobra.Command{
+	Use:   "add",
+	Short: "Add resources like modules to an existing project",
 }
 
 func init() {
