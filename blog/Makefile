@@ -1,4 +1,4 @@
-APP={{ .ProjectName }}
+APP=blog
 MAIN=./cmd/main.go
 
 .PHONY: run build tidy clean fmt lint
@@ -20,10 +20,3 @@ fmt:
 
 lint:
 	golangci-lint run
-
-run:
-	go run ./cmd/main.go
-
-build:
-	go build -o myapp ./cmd/main.go
-
