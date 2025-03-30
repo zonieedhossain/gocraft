@@ -13,6 +13,7 @@ type Options struct {
 	ORM         string
 	Auth        bool
 	Docker      bool
+	ModulePath  string
 }
 
 func Generate(opts Options) error {
@@ -33,12 +34,21 @@ func Generate(opts Options) error {
 	}
 
 	// Load main.go template
-	tmpl, err := template.ParseFiles("internal/templates/main.go.tmpl")
+	_ = renderTemplate("internal/templates/main.go.tmpl", filepath.Join(base, "main.go"), opts)
+	_ = renderTemplate("internal/templates/env.tmpl", filepath.Join(base, ".env"), opts)
+	_ = renderTemplate("internal/templates/Dockerfile.tmpl", filepath.Join(base, "Dockerfile"), opts)
+	_ = renderTemplate("internal/templates/go.mod.tmpl", filepath.Join(base, "go.mod"), opts)
+
+	return nil
+}
+
+func renderTemplate(templatePath, outputPath string, data any) error {
+	tmpl, err := template.ParseFiles(templatePath)
 	if err != nil {
 		return err
 	}
 
-	file, err := os.Create(filepath.Join(base, "cmd", "main.go"))
+	file, err := os.Create(outputPath)
 	if err != nil {
 		return err
 	}
@@ -49,11 +59,5 @@ func Generate(opts Options) error {
 		}
 	}(file)
 
-	// Render the template
-	err = tmpl.Execute(file, opts)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return tmpl.Execute(file, data)
 }
