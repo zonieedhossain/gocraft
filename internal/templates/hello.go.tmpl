@@ -1,0 +1,21 @@
+package handlers
+
+{{- if eq .Web "fiber" }}
+import "github.com/gofiber/fiber/v2"
+
+func HelloFiber(c *fiber.Ctx) error {
+	return c.SendString("👋 Hello from Fiber handler!")
+}
+{{- else if eq .Web "echo" }}
+import "github.com/labstack/echo/v4"
+
+func HelloEcho(c echo.Context) error {
+	return c.String(200, "👋 Hello from Echo handler!")
+}
+{{- else if eq .Web "gin" }}
+import "github.com/gin-gonic/gin"
+
+func HelloGin(c *gin.Context) {
+	c.String(200, "👋 Hello from Gin handler!")
+}
+{{- end }}

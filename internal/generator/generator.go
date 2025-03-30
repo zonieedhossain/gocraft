@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type Options struct {
@@ -54,6 +55,8 @@ func Generate(opts Options) error {
 	_ = renderTemplate("internal/templates/README.md.tmpl", filepath.Join(base, "README.md"), opts)
 	_ = renderTemplate("internal/templates/Makefile.tmpl", filepath.Join(base, "Makefile"), opts)
 	_ = renderTemplate(mainTemplate, filepath.Join(base, "cmd", "main.go"), opts)
+	_ = renderTemplate("internal/templates/routes.go.tmpl", filepath.Join(base, "internal", "routes", "routes.go"), opts)
+	_ = renderTemplate("internal/templates/hello.go.tmpl", filepath.Join(base, "internal", "handlers", "hello.go"), opts)
 
 	return nil
 }
@@ -76,4 +79,70 @@ func renderTemplate(templatePath, outputPath string, data any) error {
 	}(file)
 
 	return tmpl.Execute(file, data)
+}
+
+func GenerateModule(name, web string) error {
+	if web == "" {
+		detected, err := detectWebFramework()
+		if err != nil {
+			return fmt.Errorf("could not detect web framework: %w", err)
+		}
+		web = detected
+		fmt.Println("🔍 Detected web framework:", web)
+	}
+
+	data := struct {
+		Name      string
+		NameTitle string
+		Web       string
+	}{
+		Name:      name,
+		NameTitle: capitalize(name),
+		Web:       web,
+	}
+
+	base := "."
+
+	// Generate handler
+	err := renderTemplate("internal/templates/module_handler.go.tmpl",
+		filepath.Join(base, "internal", "handlers", name+".go"), data)
+	if err != nil {
+		return err
+	}
+
+	// Generate routes
+	err = renderTemplate("internal/templates/module_routes.go.tmpl",
+		filepath.Join(base, "internal", "routes", name+"_routes.go"), data)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func capitalize(s string) string {
+	if len(s) == 0 {
+		return s
+	}
+	return string(s[0]-32) + s[1:]
+}
+
+func detectWebFramework() (string, error) {
+	content, err := os.ReadFile("go.mod")
+	if err != nil {
+		return "", err
+	}
+
+	str := string(content)
+
+	switch {
+	case strings.Contains(str, "github.com/gofiber/fiber"):
+		return "fiber", nil
+	case strings.Contains(str, "github.com/labstack/echo"):
+		return "echo", nil
+	case strings.Contains(str, "github.com/gin-gonic/gin"):
+		return "gin", nil
+	default:
+		return "", fmt.Errorf("no known framework found in go.mod")
+	}
 }

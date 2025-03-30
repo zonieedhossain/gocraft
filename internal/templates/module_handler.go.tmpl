@@ -1,0 +1,29 @@
+package handlers
+
+{{- if eq .Web "fiber" }}
+import "github.com/gofiber/fiber/v2"
+{{- else if eq .Web "echo" }}
+import "github.com/labstack/echo/v4"
+{{- else if eq .Web "gin" }}
+import "github.com/gin-gonic/gin"
+{{- end }}
+
+{{- if eq .Web "fiber" }}
+func GetAll{{ .NameTitle }}s(c *fiber.Ctx) error   { return c.SendString("Get all") }
+func Get{{ .NameTitle }}(c *fiber.Ctx) error       { return c.SendString("Get one") }
+func Create{{ .NameTitle }}(c *fiber.Ctx) error    { return c.SendString("Create") }
+func Update{{ .NameTitle }}(c *fiber.Ctx) error    { return c.SendString("Update") }
+func Delete{{ .NameTitle }}(c *fiber.Ctx) error    { return c.SendString("Delete") }
+{{- else if eq .Web "echo" }}
+func GetAll{{ .NameTitle }}s(c echo.Context) error { return c.String(200, "Get all") }
+func Get{{ .NameTitle }}(c echo.Context) error     { return c.String(200, "Get one") }
+func Create{{ .NameTitle }}(c echo.Context) error  { return c.String(200, "Create") }
+func Update{{ .NameTitle }}(c echo.Context) error  { return c.String(200, "Update") }
+func Delete{{ .NameTitle }}(c echo.Context) error  { return c.String(200, "Delete") }
+{{- else if eq .Web "gin" }}
+func GetAll{{ .NameTitle }}s(c *gin.Context)        { c.String(200, "Get all") }
+func Get{{ .NameTitle }}(c *gin.Context)            { c.String(200, "Get one") }
+func Create{{ .NameTitle }}(c *gin.Context)         { c.String(200, "Create") }
+func Update{{ .NameTitle }}(c *gin.Context)         { c.String(200, "Update") }
+func Delete{{ .NameTitle }}(c *gin.Context)         { c.String(200, "Delete") }
+{{- end }}

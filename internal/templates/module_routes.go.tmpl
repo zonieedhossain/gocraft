@@ -1,0 +1,35 @@
+package routes
+
+{{- if eq .Web "fiber" }}
+import "github.com/gofiber/fiber/v2"
+{{- else if eq .Web "echo" }}
+import "github.com/labstack/echo/v4"
+{{- else if eq .Web "gin" }}
+import "github.com/gin-gonic/gin"
+{{- end }}
+import "{{ .ModulePath }}/internal/handlers"
+
+func Register{{ .NameTitle }}Routes(app interface{}) {
+{{- if eq .Web "fiber" }}
+	g := app.(*fiber.App).Group("/{{ .Name }}s")
+	g.Get("/", handlers.GetAll{{ .NameTitle }}s)
+	g.Get("/:id", handlers.Get{{ .NameTitle }})
+	g.Post("/", handlers.Create{{ .NameTitle }})
+	g.Put("/:id", handlers.Update{{ .NameTitle }})
+	g.Delete("/:id", handlers.Delete{{ .NameTitle }})
+{{- else if eq .Web "echo" }}
+	g := app.(*echo.Echo).Group("/{{ .Name }}s")
+	g.GET("/", handlers.GetAll{{ .NameTitle }}s)
+	g.GET("/:id", handlers.Get{{ .NameTitle }})
+	g.POST("/", handlers.Create{{ .NameTitle }})
+	g.PUT("/:id", handlers.Update{{ .NameTitle }})
+	g.DELETE("/:id", handlers.Delete{{ .NameTitle }})
+{{- else if eq .Web "gin" }}
+	g := app.(*gin.Engine).Group("/{{ .Name }}s")
+	g.GET("/", handlers.GetAll{{ .NameTitle }}s)
+	g.GET("/:id", handlers.Get{{ .NameTitle }})
+	g.POST("/", handlers.Create{{ .NameTitle }})
+	g.PUT("/:id", handlers.Update{{ .NameTitle }})
+	g.DELETE("/:id", handlers.Delete{{ .NameTitle }})
+{{- end }}
+}
