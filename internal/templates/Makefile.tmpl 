@@ -1,0 +1,29 @@
+APP={{ .ProjectName }}
+MAIN=./cmd/main.go
+
+.PHONY: run build tidy clean fmt lint
+
+run:
+	go run $(MAIN)
+
+build:
+	go build -o $(APP) $(MAIN)
+
+tidy:
+	go mod tidy
+
+clean:
+	rm -f $(APP)
+
+fmt:
+	go fmt ./...
+
+lint:
+	golangci-lint run
+
+run:
+	go run ./cmd/main.go
+
+build:
+	go build -o myapp ./cmd/main.go
+

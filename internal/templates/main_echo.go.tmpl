@@ -1,0 +1,17 @@
+package main
+
+import (
+	"fmt"
+	"github.com/labstack/echo/v4"
+)
+
+func main() {
+	e := echo.New()
+
+	e.GET("/", func(c echo.Context) error {
+		return c.String(200, "Welcome to {{ .ProjectName }} (Echo)!")
+	})
+
+	fmt.Println("Starting server on :3000")
+	e.Start(":3000")
+}
