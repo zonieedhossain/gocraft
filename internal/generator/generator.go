@@ -39,11 +39,11 @@ func Generate(opts Options) error {
 	var mainTemplate string
 	switch opts.Web {
 	case "fiber":
-		mainTemplate = "internal/templates/main_fiber.go.tmpl"
+		mainTemplate = "main_fiber.go.tmpl"
 	case "echo":
-		mainTemplate = "internal/templates/main_echo.go.tmpl"
+		mainTemplate = "main_echo.go.tmpl"
 	case "gin":
-		mainTemplate = "internal/templates/main_gin.go.tmpl"
+		mainTemplate = "main_gin.go.tmpl"
 	default:
 		return fmt.Errorf("unsupported web framework: %s", opts.Web)
 	}
@@ -63,15 +63,19 @@ func Generate(opts Options) error {
 }
 
 func renderTemplate(templateName, outputPath string, data any) error {
-	// Get the absolute path to the current file (generator.go)
+	// Resolve the current file location (generator.go)
 	_, currentFile, _, _ := runtime.Caller(0)
 
-	// Build the path to the templates directory
+	// Base: /path/to/gocraft/internal/generator
 	basePath := filepath.Join(filepath.Dir(currentFile), "..", "templates")
 	fullTemplatePath := filepath.Join(basePath, templateName)
 
+	// 👇 Debug print
+	fmt.Println("🛠 Template path:", fullTemplatePath)
+
 	tmpl, err := template.ParseFiles(fullTemplatePath)
 	if err != nil {
+		fmt.Println("❌ Parse error:", err)
 		return err
 	}
 
@@ -85,7 +89,6 @@ func renderTemplate(templateName, outputPath string, data any) error {
 }
 
 func GenerateModule(name, web string) error {
-	fmt.Println(name, web)
 	if web == "" {
 		detected, err := detectWebFramework()
 		if err != nil {
@@ -95,20 +98,28 @@ func GenerateModule(name, web string) error {
 		fmt.Println("🔍 Detected web framework:", web)
 	}
 
+	// ✅ Get module path from go.mod
+	modulePath, err := getModulePathFromGoMod()
+	if err != nil {
+		return fmt.Errorf("failed to detect module path: %w", err)
+	}
+
 	data := struct {
-		Name      string
-		NameTitle string
-		Web       string
+		Name       string
+		NameTitle  string
+		Web        string
+		ModulePath string
 	}{
-		Name:      name,
-		NameTitle: capitalize(name),
-		Web:       web,
+		Name:       name,
+		NameTitle:  capitalize(name),
+		Web:        web,
+		ModulePath: modulePath,
 	}
 
 	base := "."
 
 	// Generate handler
-	err := renderTemplate("module_handler.go.tmpl",
+	err = renderTemplate("module_handler.go.tmpl",
 		filepath.Join(base, "internal", "handlers", name+".go"), data)
 	if err != nil {
 		return err
@@ -149,4 +160,18 @@ func detectWebFramework() (string, error) {
 	default:
 		return "", fmt.Errorf("no known framework found in go.mod")
 	}
+}
+
+func getModulePathFromGoMod() (string, error) {
+	content, err := os.ReadFile("go.mod")
+	if err != nil {
+		return "", err
+	}
+	lines := strings.Split(string(content), "\n")
+	for _, line := range lines {
+		if strings.HasPrefix(line, "module ") {
+			return strings.TrimSpace(strings.TrimPrefix(line, "module ")), nil
+		}
+	}
+	return "", fmt.Errorf("module path not found in go.mod")
 }
