@@ -5,16 +5,17 @@ import (
 	"os"
 )
 
-type GocraftState struct {
+type GoCraftState struct {
 	ModuleName string `json:"module_name"`
 	Framework  string `json:"framework"`
+	GoVersion  string `json:"go_version,omitempty"`
 	ORM        string `json:"orm,omitempty"`
 	Database   string `json:"database,omitempty"`
 }
 
 const stateFile = ".gocraft.json"
 
-func SaveState(state GocraftState) error {
+func SaveState(state GoCraftState) error {
 	file, err := os.Create(stateFile)
 	if err != nil {
 		return err
@@ -26,13 +27,13 @@ func SaveState(state GocraftState) error {
 	return encoder.Encode(state)
 }
 
-func LoadState() (*GocraftState, error) {
+func LoadState() (*GoCraftState, error) {
 	data, err := os.ReadFile(stateFile)
 	if err != nil {
 		return nil, err
 	}
 
-	var state GocraftState
+	var state GoCraftState
 	if err := json.Unmarshal(data, &state); err != nil {
 		return nil, err
 	}

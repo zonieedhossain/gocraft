@@ -17,5 +17,5 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.AddCommand(InitCmd)
+	rootCmd.AddCommand(initCmd)
 }

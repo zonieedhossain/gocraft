@@ -1,6 +1,6 @@
-module {{.ModuleName}}
+module {{ .ModuleName }}
 
-go {{.GoVersion}}
+go {{ or .GoVersion "1.21" }}{{/* fallback to 1.21 if GoVersion not provided */}}
 
 require (
 	github.com/spf13/cobra v1.8.0

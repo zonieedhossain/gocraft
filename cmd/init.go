@@ -13,6 +13,7 @@ import (
 
 var moduleName string
 var framework string
+var goVersion string
 
 var initCmd = &cobra.Command{
 	Use:   "init",
@@ -36,9 +37,24 @@ var initCmd = &cobra.Command{
 			moduleName = strings.TrimSpace(m)
 		}
 
-		state := utils.GocraftState{
+		if goVersion == "" {
+			fmt.Print("Enter Go version (default 1.21): ")
+			v, _ := reader.ReadString('\n')
+			goVersion = strings.TrimSpace(v)
+		}
+
+		// Sanitize patch versions like "1.22.1" → "1.22"
+		if strings.Count(goVersion, ".") > 1 {
+			parts := strings.Split(goVersion, ".")
+			if len(parts) >= 2 {
+				goVersion = parts[0] + "." + parts[1]
+			}
+		}
+
+		state := utils.GoCraftState{
 			ModuleName: moduleName,
 			Framework:  framework,
+			GoVersion:  goVersion,
 		}
 		if err := utils.SaveState(state); err != nil {
 			return err
@@ -53,6 +69,7 @@ var initCmd = &cobra.Command{
 }
 
 func init() {
+	initCmd.Flags().StringVarP(&goVersion, "goversion", "g", "", "Go version to use in go.mod (e.g., 1.21)")
 	initCmd.Flags().StringVarP(&moduleName, "module", "m", "", "Go module name (e.g., github.com/you/project)")
 	initCmd.Flags().StringVarP(&framework, "framework", "f", "", "Web framework (fiber, echo, gin)")
 }
