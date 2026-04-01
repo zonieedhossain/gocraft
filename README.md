@@ -1,37 +1,21 @@
-# gocraft 🛠️
+# gocraft
 
-> CLI tool to scaffold production-ready Go microservices with Clean Architecture, configurable ORM, auth bootstrapping and Docker — out of the box.
+`gocraft` is a production-grade CLI tool for scaffolding Go microservices following **Clean Architecture** principles. It allows developers to bootstrap a fully functional, compiling, and well-structured project in seconds.
 
-Built by a Senior Backend Engineer who got tired of setting up the same structure across every project.
+## Features
+- **Clean Architecture:** Enforces separation of concerns (Domain, Usecase, Repository, Delivery)
+- **Framework Support:** Fiber, Echo, Gin
+- **ORM Support:** Bun, GORM, sqlc (coming soon)
+- **Database Support:** PostgreSQL, MySQL, SQLite
+- **Production Ready:** Includes Docker, Docker Compose, Makefile, and JWT Auth middleware
+- **Zero Manual Fixes:** Generated projects compile and run out of the box
 
----
+## Installation
 
-## 🚀 Features
-- Choose your web framework: `fiber`, `echo`, `gin`
-- Select database: `postgres`, `mysql`, `sqlite`
-- Choose ORM: `bun`, `gorm`, `sqlc`
-- Add optional features: `--auth`, `--docker`
-- Define module path via:
-  - `--github=username`
-  - `--gitlab=username`
-  - `--bitbucket=username`
-  - `--module-path=your/custom/modulepath`
-- Generates `.env`, `go.mod`, `Dockerfile`, project structure and boilerplate
-
----
-
-## 📦 Install
 ```bash
 go install github.com/zonieedhossain/gocraft@latest
 ```
 
-## ✨ Usage
-```bash
-gocraft new myapp \
-  --web=fiber \
-  --db=postgres \
-  --orm=bun \
-  --auth \
   --docker \
   --github=zonieedhossain
 ```

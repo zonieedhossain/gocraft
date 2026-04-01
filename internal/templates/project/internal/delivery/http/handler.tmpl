@@ -1,0 +1,140 @@
+package http
+
+import (
+	"strconv"
+	"net/http"
+	"{{ .ModulePath }}/internal/domain"
+	"{{ .ModulePath }}/internal/usecase"
+	{{ if eq .Web "fiber" }}
+	"github.com/gofiber/fiber/v2"
+	{{ else if eq .Web "echo" }}
+	"github.com/labstack/echo/v4"
+	{{ else if eq .Web "gin" }}
+	"github.com/gin-gonic/gin"
+	{{ end }}
+)
+
+type Handler struct {
+	logic *usecase.UserUsecase
+}
+
+func StartServer(logic *usecase.UserUsecase, port string) error {
+	h := &Handler{logic: logic}
+
+	{{ if eq .Web "fiber" }}
+	app := fiber.New()
+	api := app.Group("/api")
+	api.Get("/users", h.GetAllUsers)
+	api.Get("/users/:id", h.GetUserByID)
+	api.Post("/users", h.CreateUser)
+	return app.Listen(":" + port)
+
+	{{ else if eq .Web "echo" }}
+	e := echo.New()
+	api := e.Group("/api")
+	api.GET("/users", h.GetAllUsers)
+	api.GET("/users/:id", h.GetUserByID)
+	api.POST("/users", h.CreateUser)
+	return e.Start(":" + port)
+
+	{{ else if eq .Web "gin" }}
+	r := gin.Default()
+	api := r.Group("/api")
+	api.GET("/users", h.GetAllUsers)
+	api.GET("/users/:id", h.GetUserByID)
+	api.POST("/users", h.CreateUser)
+	return r.Run(":" + port)
+	{{ end }}
+}
+
+{{ if eq .Web "fiber" }}
+func (h *Handler) GetAllUsers(c *fiber.Ctx) error {
+	users, err := h.logic.GetAllUsers()
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.JSON(users)
+}
+
+func (h *Handler) GetUserByID(c *fiber.Ctx) error {
+	id, _ := strconv.Atoi(c.Params("id"))
+	user, err := h.logic.GetUserByID(uint(id))
+	if err != nil {
+		return c.Status(404).JSON(fiber.Map{"error": "User not found"})
+	}
+	return c.JSON(user)
+}
+
+func (h *Handler) CreateUser(c *fiber.Ctx) error {
+	var user domain.User
+	if err := c.BodyParser(&user); err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid request body"})
+	}
+	if err := h.logic.CreateUser(&user); err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Status(201).JSON(user)
+}
+
+{{ else if eq .Web "echo" }}
+func (h *Handler) GetAllUsers(c echo.Context) error {
+	users, err := h.logic.GetAllUsers()
+	if err != nil {
+		return c.JSON(500, map[string]string{"error": err.Error()})
+	}
+	return c.JSON(200, users)
+}
+
+func (h *Handler) GetUserByID(c echo.Context) error {
+	id, _ := strconv.Atoi(c.Param("id"))
+	user, err := h.logic.GetUserByID(uint(id))
+	if err != nil {
+		return c.JSON(404, map[string]string{"error": "User not found"})
+	}
+	return c.JSON(200, user)
+}
+
+func (h *Handler) CreateUser(c echo.Context) error {
+	var user domain.User
+	if err := c.Bind(&user); err != nil {
+		return c.JSON(400, map[string]string{"error": "Invalid request body"})
+	}
+	if err := h.logic.CreateUser(&user); err != nil {
+		return c.JSON(500, map[string]string{"error": err.Error()})
+	}
+	return c.JSON(201, user)
+}
+
+{{ else if eq .Web "gin" }}
+func (h *Handler) GetAllUsers(c *gin.Context) {
+	users, err := h.logic.GetAllUsers()
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(200, users)
+}
+
+func (h *Handler) GetUserByID(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	user, err := h.logic.GetUserByID(uint(id))
+	if err != nil {
+		c.JSON(404, gin.H{"error": "User not found"})
+		return
+	}
+	c.JSON(200, user)
+}
+
+func (h *Handler) CreateUser(c *gin.Context) {
+	var user domain.User
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(400, gin.H{"error": "Invalid request body"})
+		return
+	}
+	if err := h.logic.CreateUser(&user); err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(201, user)
+}
+{{ end }}

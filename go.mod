@@ -2,7 +2,10 @@ module github.com/zonieedhossain/gocraft
 
 go 1.23.3
 
-require github.com/spf13/cobra v1.9.1
+require (
+	github.com/spf13/cobra v1.9.1
+	golang.org/x/text v0.21.0
+)
 
 require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect

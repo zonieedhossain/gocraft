@@ -1,0 +1,96 @@
+package infrastructure
+
+import (
+	"fmt"
+	"os"
+
+	{{ if eq .ORM "gorm" }}
+	"gorm.io/driver/postgres"
+	"gorm.io/driver/mysql"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
+	{{ else if eq .ORM "bun" }}
+	"database/sql"
+	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/dialect/pgdialect"
+	"github.com/uptrace/bun/dialect/mysqldialect"
+	"github.com/uptrace/bun/dialect/sqlitedialect"
+	_ "github.com/lib/pq"
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/mattn/go-sqlite3"
+	{{ else }}
+	"database/sql"
+	_ "github.com/lib/pq"
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/mattn/go-sqlite3"
+	{{ end }}
+)
+
+{{ if eq .ORM "gorm" }}
+func NewDB() (*gorm.DB, error) {
+	var dialector gorm.Dialector
+
+	switch os.Getenv("DB_TYPE") {
+	case "mysql":
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+			os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_NAME"))
+		dialector = mysql.Open(dsn)
+	case "sqlite":
+		dialector = sqlite.Open(os.Getenv("DB_NAME") + ".db")
+	default: // postgres
+		dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
+			os.Getenv("DB_HOST"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"), os.Getenv("DB_PORT"), os.Getenv("DB_SSLMODE"))
+		dialector = postgres.Open(dsn)
+	}
+
+	return gorm.Open(dialector, &gorm.Config{})
+}
+{{ else if eq .ORM "bun" }}
+func NewDB() (*bun.DB, error) {
+	var sqldb *sql.DB
+	var err error
+	var dialect bun.IDialect
+
+	switch os.Getenv("DB_TYPE") {
+	case "mysql":
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
+			os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_NAME"))
+		sqldb, err = sql.Open("mysql", dsn)
+		dialect = mysqldialect.New()
+	case "sqlite":
+		sqldb, err = sql.Open("sqlite3", os.Getenv("DB_NAME")+".db")
+		dialect = sqlitedialect.New()
+	default: // postgres
+		dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
+			os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_NAME"), os.Getenv("DB_SSLMODE"))
+		sqldb, err = sql.Open("postgres", dsn)
+		dialect = pgdialect.New()
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return bun.NewDB(sqldb, dialect), nil
+}
+{{ else }}
+func NewDB() (*sql.DB, error) {
+	var sqldb *sql.DB
+	var err error
+
+	switch os.Getenv("DB_TYPE") {
+	case "mysql":
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
+			os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_NAME"))
+		sqldb, err = sql.Open("mysql", dsn)
+	case "sqlite":
+		sqldb, err = sql.Open("sqlite3", os.Getenv("DB_NAME")+".db")
+	default: // postgres
+		dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
+			os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_NAME"), os.Getenv("DB_SSLMODE"))
+		sqldb, err = sql.Open("postgres", dsn)
+	}
+
+	return sqldb, err
+}
+{{ end }}
