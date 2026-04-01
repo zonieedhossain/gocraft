@@ -82,61 +82,61 @@ func (h *Handler) CreateUser(c *fiber.Ctx) error {
 func (h *Handler) GetAllUsers(c echo.Context) error {
 	users, err := h.logic.GetAllUsers()
 	if err != nil {
-		return c.JSON(500, map[string]string{"error": err.Error()})
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
-	return c.JSON(200, users)
+	return c.JSON(http.StatusOK, users)
 }
 
 func (h *Handler) GetUserByID(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 	user, err := h.logic.GetUserByID(uint(id))
 	if err != nil {
-		return c.JSON(404, map[string]string{"error": "User not found"})
+		return c.JSON(http.StatusNotFound, map[string]string{"error": "User not found"})
 	}
-	return c.JSON(200, user)
+	return c.JSON(http.StatusOK, user)
 }
 
 func (h *Handler) CreateUser(c echo.Context) error {
 	var user domain.User
 	if err := c.Bind(&user); err != nil {
-		return c.JSON(400, map[string]string{"error": "Invalid request body"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
 	}
 	if err := h.logic.CreateUser(&user); err != nil {
-		return c.JSON(500, map[string]string{"error": err.Error()})
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
-	return c.JSON(201, user)
+	return c.JSON(http.StatusCreated, user)
 }
 
 {{ else if eq .Web "gin" }}
 func (h *Handler) GetAllUsers(c *gin.Context) {
 	users, err := h.logic.GetAllUsers()
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(200, users)
+	c.JSON(http.StatusOK, users)
 }
 
 func (h *Handler) GetUserByID(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	user, err := h.logic.GetUserByID(uint(id))
 	if err != nil {
-		c.JSON(404, gin.H{"error": "User not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
-	c.JSON(200, user)
+	c.JSON(http.StatusOK, user)
 }
 
 func (h *Handler) CreateUser(c *gin.Context) {
 	var user domain.User
 	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(400, gin.H{"error": "Invalid request body"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
 	}
 	if err := h.logic.CreateUser(&user); err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(201, user)
+	c.JSON(http.StatusCreated, user)
 }
 {{ end }}

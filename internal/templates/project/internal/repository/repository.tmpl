@@ -1,11 +1,13 @@
 package repository
 
 import (
+	{{ if or (eq .ORM "bun") (eq .ORM "sqlc") }}
+	"context"
+	{{ end }}
 	"{{ .ModulePath }}/internal/domain"
 	{{ if eq .ORM "gorm" }}
 	"gorm.io/gorm"
 	{{ else if eq .ORM "bun" }}
-	"context"
 	"github.com/uptrace/bun"
 	{{ else }}
 	"database/sql"

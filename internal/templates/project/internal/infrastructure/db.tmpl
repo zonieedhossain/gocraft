@@ -54,29 +54,31 @@ func NewDB() (*gorm.DB, error) {
 func NewDB() (*bun.DB, error) {
 	var sqldb *sql.DB
 	var err error
-	var dialect bun.IDialect
 
 	switch os.Getenv("DB_TYPE") {
 	case "mysql":
 		dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
 			os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_NAME"))
 		sqldb, err = sql.Open("mysql", dsn)
-		dialect = mysqldialect.New()
+		if err != nil {
+			return nil, err
+		}
+		return bun.NewDB(sqldb, mysqldialect.New()), nil
 	case "sqlite":
 		sqldb, err = sql.Open("sqlite3", os.Getenv("DB_NAME")+".db")
-		dialect = sqlitedialect.New()
+		if err != nil {
+			return nil, err
+		}
+		return bun.NewDB(sqldb, sqlitedialect.New()), nil
 	default: // postgres
 		dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
 			os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_NAME"), os.Getenv("DB_SSLMODE"))
 		sqldb, err = sql.Open("postgres", dsn)
-		dialect = pgdialect.New()
+		if err != nil {
+			return nil, err
+		}
+		return bun.NewDB(sqldb, pgdialect.New()), nil
 	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	return bun.NewDB(sqldb, dialect), nil
 }
 {{ else if eq .ORM "sqlc" }}
 func NewDB() (*sql.DB, error) {
