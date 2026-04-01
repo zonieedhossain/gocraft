@@ -2,7 +2,9 @@ package http
 
 import (
 	"strconv"
+	{{ if or (eq .Web "echo") (eq .Web "gin") }}
 	"net/http"
+	{{ end }}
 	"{{ .ModulePath }}/internal/domain"
 	"{{ .ModulePath }}/internal/usecase"
 	{{ if eq .Web "fiber" }}
