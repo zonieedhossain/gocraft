@@ -1,0 +1,35 @@
+-- name: GetUserByID :one
+SELECT * FROM users
+WHERE id = ? LIMIT 1;
+
+-- name: ListUsers :many
+SELECT * FROM users
+ORDER BY username;
+
+-- name: CreateUser :one
+{{ if eq .DB "postgres" }}
+INSERT INTO users (username, email, password)
+VALUES ($1, $2, $3)
+RETURNING *;
+{{ else }}
+INSERT INTO users (username, email, password)
+VALUES (?, ?, ?)
+RETURNING *;
+{{ end }}
+
+-- name: UpdateUser :one
+{{ if eq .DB "postgres" }}
+UPDATE users 
+SET username = $2, email = $3, updated_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING *;
+{{ else }}
+UPDATE users 
+SET username = ?, email = ?, updated_at = CURRENT_TIMESTAMP
+WHERE id = ?
+RETURNING *;
+{{ end }}
+
+-- name: DeleteUser :exec
+DELETE FROM users
+WHERE id = ?;

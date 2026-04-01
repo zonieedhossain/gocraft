@@ -56,6 +56,25 @@ func Generate(opts Options) error {
 		{"project/internal/delivery/http/handler.tmpl", "internal/delivery/http/handler.go"},
 	}
 
+	if opts.ORM == "sqlc" {
+		files = append(files, struct {
+			tmplPath string
+			outPath  string
+		}{"project/common/sqlc.yaml.tmpl", "sqlc.yaml"})
+		files = append(files, struct {
+			tmplPath string
+			outPath  string
+		}{"project/internal/repository/schema.sql.tmpl", "internal/repository/schema.sql"})
+		files = append(files, struct {
+			tmplPath string
+			outPath  string
+		}{"project/internal/repository/query.sql.tmpl", "internal/repository/query.sql"})
+		files = append(files, struct {
+			tmplPath string
+			outPath  string
+		}{"project/internal/repository/sqlc_generated.tmpl", "internal/repository/sqlc_generated.go"})
+	}
+
 	if opts.Docker {
 		files = append(files, struct {
 			tmplPath string

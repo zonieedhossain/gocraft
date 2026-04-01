@@ -5,7 +5,7 @@
 ## Features
 - **Clean Architecture:** Enforces separation of concerns (Domain, Usecase, Repository, Delivery)
 - **Framework Support:** Fiber, Echo, Gin
-- **ORM Support:** Bun, GORM, sqlc (coming soon)
+- **ORM Support:** Bun, GORM, sqlc
 - **Database Support:** PostgreSQL, MySQL, SQLite
 - **Production Ready:** Includes Docker, Docker Compose, Makefile, and JWT Auth middleware
 - **Zero Manual Fixes:** Generated projects compile and run out of the box
